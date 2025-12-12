@@ -10,13 +10,100 @@ The FIRE (Fake Information Risk Evaluation) News Aggregator uses a deep learning
 
 - 📰 **News Feed**: Browse aggregated news articles with real-time FIRE scores
 - 🎯 **Risk Assessment**: ML-powered scoring (0-100) categorizing articles as:
-  - ✅ No risk detected (50-100)
-  - ⚡ Unverified (35-49)
-  - ⚠️ Likely misleading (<35)
+  - ✅ No risk detected (0-49)
+  - ⚡ Unverified (50-69)
+  - ⚠️ Likely misleading (70-100)
 - 🚩 **User Reports**: Readers can report incorrect FIRE scores
-- 👮 **Moderator Console**: Review queue for human oversight
+- 👮 **Moderator Console**: Review queue for human oversight (Firebase authenticated)
 - 📤 **Article Submission**: Partner API for external publishers
 - 🔍 **Detailed View**: Full article reading with FIRE explanations
+
+## ⚠️ Prerequisites for Team Members
+
+Before cloning this repository, you **MUST** install Git LFS:
+
+### Install Git LFS
+
+**Windows:**
+```bash
+# Download and install from: https://git-lfs.github.com/
+# Or use Chocolatey:
+choco install git-lfs
+```
+
+**Mac:**
+```bash
+brew install git-lfs
+```
+
+**Linux:**
+```bash
+sudo apt-get install git-lfs
+```
+
+**After installation:**
+```bash
+git lfs install
+```
+
+### Why Git LFS?
+
+This project uses **Git Large File Storage (LFS)** to manage the trained ML model file (`bestmodel_3_run5.pt`, ~250MB). Without Git LFS, you won't be able to clone or pull the model file properly.
+
+## Getting Started
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/alonso113/DLGroup1Milestone3.git
+cd DLGroup1Milestone3
+
+# Verify Git LFS downloaded the model
+ls -lh backend/ml/bestmodel_3_run5.pt
+# Should show ~250MB, not 130 bytes
+```
+
+If the model file is only 130 bytes, you forgot to install Git LFS! Run `git lfs install` and `git lfs pull`.
+
+### 2. Set Up the Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend will be available at **http://localhost:3000**
+
+### 3. Set Up the Backend
+
+**Prerequisites:**
+- Go 1.21+ ([download](https://go.dev/dl/))
+- Python 3.8+ with pip
+
+**Install dependencies:**
+```bash
+cd backend
+
+# Go dependencies
+go mod tidy
+
+# Python dependencies
+cd ml
+pip install -r requirements.txt
+cd ..
+```
+
+**Run the server:**
+```bash
+go run main.go
+```
+
+Backend will be available at **http://localhost:8080**
+
+### 4. (Optional) Set Up Firebase Authentication
+
+See [`FIREBASE_SETUP.md`](FIREBASE_SETUP.md) for instructions on setting up the moderator authentication.
 
 ## Tech Stack
 
@@ -26,12 +113,13 @@ The FIRE (Fake Information Risk Evaluation) News Aggregator uses a deep learning
 - **React Router** for navigation
 - **Axios** for API communication
 - **Tailwind CSS** for styling
+- **Firebase Auth** for moderator authentication
 
-### Backend (Coming Next)
-- **Go** for high-performance API services
-- **PostgreSQL** for data persistence
-- **Python** for ML model inference
-- **Docker** for containerization
+### Backend
+- **Go 1.21+** for high-performance API services
+- **DistilBERT** (fine-tuned) for fake news detection
+- **PyTorch + Transformers** for ML inference
+- **Python 3.8+** for model integration
 
 ## Project Structure
 
@@ -40,14 +128,28 @@ DLGroup1Milestone3/
 ├── frontend/                 # React + TypeScript application
 │   ├── src/
 │   │   ├── components/       # Reusable UI components
-│   │   │   └── common/       # FIREBadge, ArticleCard, etc.
+│   │   │   ├── common/       # FIREBadge, ArticleCard, Header, etc.
+│   │   │   └── auth/         # ProtectedRoute
 │   │   ├── pages/            # Page components
 │   │   │   ├── Dashboard.tsx
 │   │   │   ├── ArticlePage.tsx
 │   │   │   ├── ModeratorConsole.tsx
-│   │   │   └── SubmitArticle.tsx
+│   │   │   ├── SubmitArticle.tsx
+│   │   │   └── Login.tsx
 │   │   ├── services/         # API service layer
+│   │   ├── context/          # Auth context
 │   │   └── types/            # TypeScript definitions
+├── backend/                  # Go backend
+│   ├── main.go              # Server entry point
+│   ├── internal/
+│   │   ├── handlers/        # HTTP request handlers
+│   │   ├── services/        # Business logic (ML service)
+│   │   └── models/          # Data structures
+│   └── ml/
+│       ├── predict.py       # Python ML inference script
+│       ├── bestmodel_3_run5.pt  # Trained DistilBERT model (Git LFS)
+│       └── requirements.txt
+└── .gitattributes           # Git LFS configuration
 │   └── package.json
 │
 ├── backend/                  # Go backend (to be created)

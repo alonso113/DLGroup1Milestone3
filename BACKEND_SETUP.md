@@ -3,9 +3,30 @@
 ## Prerequisites Check
 
 Before proceeding, you need:
+- ✅ **Git LFS** installed ([see GIT_LFS_SETUP.md](GIT_LFS_SETUP.md))
 - ✅ **Go 1.21+** installed
-- ✅ **Python 3.8+** installed (you already have this)
-- ✅ **PyTorch** installed
+- ✅ **Python 3.8+** installed
+- ✅ **PyTorch + Transformers** installed
+
+## Step 0: Verify Model File (IMPORTANT!)
+
+The trained model is stored with Git LFS. Verify it downloaded correctly:
+
+```bash
+# Check the model file size
+ls -lh backend\ml\bestmodel_3_run5.pt
+
+# Should show ~250MB
+# If it shows only 130 bytes, you need to install Git LFS!
+```
+
+**If the model is missing or only 130 bytes:**
+1. Install Git LFS: https://git-lfs.github.com/
+2. Run: `git lfs install`
+3. Run: `git lfs pull`
+4. Verify again: The file should now be ~250MB
+
+See [GIT_LFS_SETUP.md](GIT_LFS_SETUP.md) for detailed instructions.
 
 ## Step 1: Install Go
 
@@ -25,6 +46,9 @@ Should show: `go version go1.21.x windows/amd64`
 
 ```bash
 cd backend\ml
+pip install -r requirements.txt
+
+# Or manually:
 pip install torch transformers numpy
 ```
 
