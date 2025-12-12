@@ -22,11 +22,12 @@ export interface FIREScore {
 }
 
 export interface CreateArticleRequest {
-  headline: string;
-  body: string;
+  title: string;
+  content: string;
   author?: string;
   source: string;
-  published_date?: string;
+  url?: string;
+  publishedAt: string;
 }
 
 export interface ReportRequest {

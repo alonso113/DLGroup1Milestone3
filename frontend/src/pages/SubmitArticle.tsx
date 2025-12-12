@@ -4,11 +4,12 @@ import { articleService } from '../services/articleService';
 
 export const SubmitArticle: React.FC = () => {
   const [formData, setFormData] = useState({
-    headline: '',
-    body: '',
+    title: '',
+    content: '',
     author: '',
     source: '',
-    published_date: '',
+    url: '',
+    publishedAt: new Date().toISOString().split('T')[0], // Default to today
   });
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<any>(null);
@@ -24,7 +25,7 @@ export const SubmitArticle: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.headline || !formData.body || !formData.source) {
+    if (!formData.title || !formData.content || !formData.source) {
       setError('Please fill in all required fields');
       return;
     }
@@ -37,11 +38,12 @@ export const SubmitArticle: React.FC = () => {
       
       // Reset form
       setFormData({
-        headline: '',
-        body: '',
+        title: '',
+        content: '',
         author: '',
         source: '',
-        published_date: '',
+        url: '',
+        publishedAt: new Date().toISOString().split('T')[0],
       });
     } catch (err) {
       setError('Failed to submit article. Please try again.');
@@ -56,7 +58,7 @@ export const SubmitArticle: React.FC = () => {
     if (score < 50) return 'text-fire-yellow';
     return 'text-fire-green';
   };
-
+  // revisit which fields are here, prob dont need all the ones actually here
   return (
     <Layout>
       <div className="max-w-3xl mx-auto">
@@ -111,29 +113,29 @@ export const SubmitArticle: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
           <div>
-            <label htmlFor="headline" className="block text-sm font-medium text-gray-700 mb-2">
-              Headline <span className="text-red-500">*</span>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              Title <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
-              id="headline"
-              name="headline"
-              value={formData.headline}
+              id="title"
+              name="title"
+              value={formData.title}
               onChange={handleChange}
               required
               className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter article headline"
+              placeholder="Enter article title"
             />
           </div>
 
           <div>
-            <label htmlFor="body" className="block text-sm font-medium text-gray-700 mb-2">
-              Article Body <span className="text-red-500">*</span>
+            <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+              Article Content <span className="text-red-500">*</span>
             </label>
             <textarea
-              id="body"
-              name="body"
-              value={formData.body}
+              id="content"
+              name="content"
+              value={formData.content}
               onChange={handleChange}
               required
               rows={12}
@@ -175,18 +177,36 @@ export const SubmitArticle: React.FC = () => {
             </div>
           </div>
 
-          <div>
-            <label htmlFor="published_date" className="block text-sm font-medium text-gray-700 mb-2">
-              Published Date
-            </label>
-            <input
-              type="date"
-              id="published_date"
-              name="published_date"
-              value={formData.published_date}
-              onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label htmlFor="url" className="block text-sm font-medium text-gray-700 mb-2">
+                Article URL
+              </label>
+              <input
+                type="url"
+                id="url"
+                name="url"
+                value={formData.url}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="https://example.com/article"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="publishedAt" className="block text-sm font-medium text-gray-700 mb-2">
+                Published Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="publishedAt"
+                name="publishedAt"
+                value={formData.publishedAt}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 rounded-md px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
 
           <div className="flex gap-4 pt-4">
@@ -201,11 +221,12 @@ export const SubmitArticle: React.FC = () => {
               type="button"
               onClick={() => {
                 setFormData({
-                  headline: '',
-                  body: '',
+                  title: '',
+                  content: '',
                   author: '',
                   source: '',
-                  published_date: '',
+                  url: '',
+                  publishedAt: new Date().toISOString().split('T')[0],
                 });
                 setResult(null);
                 setError(null);
