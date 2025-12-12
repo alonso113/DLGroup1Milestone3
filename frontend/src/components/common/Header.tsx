@@ -1,11 +1,23 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 export const Header: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
 
   const isActive = (path: string): boolean => {
     return location.pathname === path;
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate('/');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
   };
 
   return (
@@ -20,7 +32,7 @@ export const Header: React.FC = () => {
             </div>
           </Link>
 
-          <nav className="flex gap-6">
+          <nav className="flex gap-6 items-center">
             <Link
               to="/"
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
@@ -31,16 +43,21 @@ export const Header: React.FC = () => {
             >
               News Feed
             </Link>
-            <Link
-              to="/moderator"
-              className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                isActive('/moderator')
-                  ? 'bg-blue-600 text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              Moderator Console
-            </Link>
+            
+            {/* Only show moderator link if authenticated */}
+            {user && (
+              <Link
+                to="/mod"
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  isActive('/mod')
+                    ? 'bg-blue-600 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Moderator Console
+              </Link>
+            )}
+            
             <Link
               to="/submit"
               className={`px-4 py-2 rounded-md font-medium transition-colors ${
@@ -51,6 +68,16 @@ export const Header: React.FC = () => {
             >
               Submit Article
             </Link>
+
+            {/* Show logout button if authenticated */}
+            {user && (
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-2 rounded-md font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                Logout
+              </button>
+            )}
           </nav>
         </div>
       </div>
