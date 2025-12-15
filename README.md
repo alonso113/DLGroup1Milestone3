@@ -257,38 +257,10 @@ else:  # fake
 - **Model Card**: Visit `/model-card` - DistilBERT specs, training details, metrics
 - **Data Card**: Visit `/data-card` - ISOT dataset details, biases, limitations
 
-## 🐛 Troubleshooting
-
-### Docker Issues
-| Issue | Solution |
-|-------|----------|
-| Model file only 130 bytes in container? | Run `git lfs pull` before `docker-compose build` |
-| "Cannot connect to backend" | Check logs: `docker-compose logs backend` |
-| "Firebase permission denied" | Verify `firebase-credentials.json` exists in `backend/` directory |
-| Port 3000 or 8080 already in use? | Stop conflicting services or change ports in `docker-compose.yml` |
-| Changes not reflected after rebuild? | Use `docker-compose up --build --force-recreate` |
-| Backend container exits immediately | Check logs for errors. Common: missing/invalid firebase credentials, model not found |
-| Out of disk space | Clean up: `docker system prune -a && docker volume prune` |
-| First inference takes 20+ seconds | Normal - PyTorch model loading. Subsequent requests are 5-10s |
-
-### Manual Setup Issues
-| Issue | Solution |
-|-------|----------|
-| Model file only 130 bytes? | Install Git LFS: `git lfs install && git lfs pull` |
-| "Cannot connect to backend" | Ensure backend running: `cd backend && go run main.go` |
-| "Firebase permission denied" | Check `firebase-credentials.json` in `backend/` directory |
-| "Python not found" | Set path: `$env:PYTHON_PATH="python"` (PowerShell) |
-| Article submission timeout? | ML inference takes ~5-20s on first run (model loading) |
-
-### Performance Notes
-- **Backend Memory**: Uses ~2GB RAM (PyTorch + model). Ensure Docker Desktop has 4GB+ allocated
-- **First Inference**: 10-20 seconds (model loading). Keep containers running for faster subsequent requests
-- **Build Time**: First build takes 5-10 minutes (downloads dependencies). Cached builds are faster
-
 ## 👥 Team
 
-Alonso Geesink Antón
-Claudio Catalano Leiva
+Alonso Geesink Antón, 
+Claudio Catalano Leiva, 
 Seyit Inci
 
 ## 📄 License
