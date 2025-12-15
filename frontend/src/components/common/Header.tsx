@@ -69,6 +69,28 @@ export const Header: React.FC = () => {
               Submit Article
             </Link>
 
+            <Link
+              to="/model-card"
+              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                isActive('/model-card')
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Model Card
+            </Link>
+
+            <Link
+              to="/data-card"
+              className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                isActive('/data-card')
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              Data Card
+            </Link>
+
             {/* Show logout button if authenticated */}
             {user && (
               <button

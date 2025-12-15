@@ -7,6 +7,8 @@ import { ArticlePage } from './pages/ArticlePage';
 import { ModeratorConsole } from './pages/ModeratorConsole';
 import { SubmitArticle } from './pages/SubmitArticle';
 import { Login } from './pages/Login';
+import { ModelCard } from './pages/ModelCard';
+import { DataCard } from './pages/DataCard';
 import './index.css';
 
 function App() {
@@ -17,6 +19,8 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/article/:id" element={<ArticlePage />} />
           <Route path="/submit" element={<SubmitArticle />} />
+          <Route path="/model-card" element={<ModelCard />} />
+          <Route path="/data-card" element={<DataCard />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/mod"
