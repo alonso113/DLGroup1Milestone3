@@ -94,18 +94,20 @@ func (h *ArticleHandler) SubmitArticle(w http.ResponseWriter, r *http.Request) {
 }
 
 // Helper function to get label from score
+// Higher score = more reliable (real), Lower score = less reliable (fake)
 func getLabelFromScore(score int) string {
 	if score >= 50 {
-		return "fake"
+		return "real"
 	}
-	return "real"
+	return "fake"
 }
 
 // Helper function to get category from score
+// Higher score = safer, Lower score = riskier
 func getCategoryFromScore(score int) string {
-	if score < 35 {
+	if score >= 70 {
 		return "No risk detected"
-	} else if score < 70 {
+	} else if score >= 35 {
 		return "Unverified"
 	}
 	return "Likely misleading"

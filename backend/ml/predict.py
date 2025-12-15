@@ -82,15 +82,12 @@ def predict_fire_score(model, tokenizer, article_text):
             confidence = probs[0][pred_class].item()
             
             # Calculate FIRE score (0-100)
-            # If model predicts FAKE (0), higher FIRE score (more risky)
-            # If model predicts TRUE (1), lower FIRE score (less risky)
-            if pred_class == 0:  # Fake news
-                fire_score = int(50 + (confidence * 50))  # Range: 50-100
-            else:  # True news
-                fire_score = int(50 - (confidence * 50))  # Range: 0-50
-        #TODO: scoring system doesnt really make sense: classification is purely binarr
-        #yet end user sees both a overall score based on the classification and confidence score
-        #and also the confidence score
+            # Higher score = MORE RELIABLE (safer)
+            # Lower score = LESS RELIABLE (riskier)
+            if pred_class == 1:  # True news
+                fire_score = int(50 + (confidence * 50))  # Range: 50-100 (safe)
+            else:  # Fake news
+                fire_score = int(50 - (confidence * 50))  # Range: 0-50 (risky)
 
         return {
             "overall_score": fire_score,
