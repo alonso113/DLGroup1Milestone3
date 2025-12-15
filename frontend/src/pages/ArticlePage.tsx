@@ -124,6 +124,11 @@ export const ArticlePage: React.FC = () => {
               
               <div>
                 <FIREBadge fireScore={article.fire_score} size="large" />
+                {article.model_version && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Model: {article.model_version}
+                  </p>
+                )}
               </div>
             </div>
           </div>

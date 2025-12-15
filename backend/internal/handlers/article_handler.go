@@ -155,13 +155,14 @@ func (h *ArticleHandler) GetArticles(w http.ResponseWriter, r *http.Request) {
 		log.Printf("   PublishedAt=%v, HasFIREScore=%v", article.PublishedAt, article.FIREScore != nil)
 		
 		articleMap := map[string]interface{}{
-			"id":          article.ID,
-			"title":       article.Title,
-			"content":     article.Content,
-			"url":         article.URL,
-			"source":      article.Source,
-			"author":      article.Author,
-			"publishedAt": article.PublishedAt,
+			"id":            article.ID,
+			"title":         article.Title,
+			"content":       article.Content,
+			"url":           article.URL,
+			"source":        article.Source,
+			"author":        article.Author,
+			"publishedAt":   article.PublishedAt,
+			"model_version": article.ModelVersion,
 		}
 		
 		if article.FIREScore != nil {
@@ -285,13 +286,14 @@ func (h *ArticleHandler) GetArticleByID(w http.ResponseWriter, r *http.Request) 
 	
 	// Transform article to include calculated fields
 	response := map[string]interface{}{
-		"id":          article.ID,
-		"title":       article.Title,
-		"content":     article.Content,
-		"url":         article.URL,
-		"source":      article.Source,
-		"author":      article.Author,
-		"publishedAt": article.PublishedAt,
+		"id":            article.ID,
+		"title":         article.Title,
+		"content":       article.Content,
+		"url":           article.URL,
+		"source":        article.Source,
+		"author":        article.Author,
+		"publishedAt":   article.PublishedAt,
+		"model_version": article.ModelVersion,
 	}
 	
 	if article.FIREScore != nil {

@@ -4,14 +4,15 @@ import "time"
 
 // Article represents a news article submission
 type Article struct {
-	ID          string    `json:"id,omitempty"`
-	Title       string    `json:"title"`
-	Content     string    `json:"content"`
-	URL         string    `json:"url"`
-	Source      string    `json:"source"`
-	Author      string    `json:"author,omitempty"`
-	PublishedAt time.Time `json:"published_at"`
-	FIREScore   *FIREScore `json:"fire_score,omitempty"`
+	ID           string     `json:"id,omitempty"`
+	Title        string     `json:"title"`
+	Content      string     `json:"content"`
+	URL          string     `json:"url"`
+	Source       string     `json:"source"`
+	Author       string     `json:"author,omitempty"`
+	PublishedAt  time.Time  `json:"published_at"`
+	ModelVersion string     `json:"model_version,omitempty"`
+	FIREScore    *FIREScore `json:"fire_score,omitempty"`
 }
 
 // FIREScore represents the fake news detection score

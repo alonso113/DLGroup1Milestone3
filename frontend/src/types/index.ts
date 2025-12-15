@@ -8,6 +8,7 @@ export interface Article {
   source: string;
   url?: string;
   publishedAt?: Date;
+  model_version?: string;
   fire_score?: FIREScore;
 }
 

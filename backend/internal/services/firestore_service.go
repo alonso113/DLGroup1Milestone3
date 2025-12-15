@@ -13,6 +13,9 @@ import (
 	"backend/internal/models"
 )
 
+// Current model version for tracking predictions
+const ModelVersion = "v1.0.0"
+
 // FirestoreService handles database operations
 type FirestoreService struct {
 	client *firestore.Client
@@ -61,6 +64,7 @@ func (s *FirestoreService) SaveArticle(article *models.Article) (string, error) 
 		"published_at":     article.PublishedAt,
 		"submitted_at":     time.Now(),
 		"fire_score":       article.FIREScore.OverallScore,
+		"model_version":    ModelVersion,
 		"needs_moderation": false, // Initialize as false for new articles
 	})
 
@@ -103,13 +107,14 @@ func (s *FirestoreService) GetArticles(limit int) ([]*models.Article, error) {
 		}
 
 		article := &models.Article{
-			ID:          doc.Ref.ID,
-			Title:       getStringField(data, "title"),
-			Content:     getStringField(data, "content"),
-			URL:         getStringField(data, "url"),
-			Source:      getStringField(data, "source"),
-			Author:      getStringField(data, "author"),
-			PublishedAt: publishedAt,
+			ID:           doc.Ref.ID,
+			Title:        getStringField(data, "title"),
+			Content:      getStringField(data, "content"),
+			URL:          getStringField(data, "url"),
+			Source:       getStringField(data, "source"),
+			Author:       getStringField(data, "author"),
+			PublishedAt:  publishedAt,
+			ModelVersion: getStringField(data, "model_version"),
 			FIREScore: &models.FIREScore{
 				OverallScore: fireScore,
 				Timestamp:    submittedAt,
@@ -144,13 +149,14 @@ func (s *FirestoreService) GetArticleByID(id string) (*models.Article, error) {
 	}
 
 	article := &models.Article{
-		ID:          id,
-		Title:       getStringField(data, "title"),
-		Content:     getStringField(data, "content"),
-		URL:         getStringField(data, "url"),
-		Source:      getStringField(data, "source"),
-		Author:      getStringField(data, "author"),
-		PublishedAt: publishedAt,
+		ID:           id,
+		Title:        getStringField(data, "title"),
+		Content:      getStringField(data, "content"),
+		URL:          getStringField(data, "url"),
+		Source:       getStringField(data, "source"),
+		Author:       getStringField(data, "author"),
+		PublishedAt:  publishedAt,
+		ModelVersion: getStringField(data, "model_version"),
 		FIREScore: &models.FIREScore{
 			OverallScore: fireScore,
 			Timestamp:    submittedAt,
