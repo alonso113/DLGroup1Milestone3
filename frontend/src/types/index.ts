@@ -36,6 +36,7 @@ export interface ReportRequest {
 export interface ModeratorOverrideRequest {
   article_id: string;
   new_label: 'fake' | 'real';
+  confidence: number;
   notes?: string;
 }
 

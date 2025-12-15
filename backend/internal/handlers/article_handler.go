@@ -306,3 +306,74 @@ func (h *ArticleHandler) GetArticleByID(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+// OverrideFIREScore handles POST /api/v1/moderator/override
+func (h *ArticleHandler) OverrideFIREScore(w http.ResponseWriter, r *http.Request) {
+	// Parse request body
+	var reqBody struct {
+		ArticleID  string  `json:"article_id"`
+		NewLabel   string  `json:"new_label"`
+		Confidence float64 `json:"confidence"`
+		Notes      string  `json:"notes"`
+	}
+	
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	
+	if reqBody.ArticleID == "" || reqBody.NewLabel == "" {
+		http.Error(w, "article_id and new_label are required", http.StatusBadRequest)
+		return
+	}
+	
+	// Validate confidence (should be between 0 and 1)
+	if reqBody.Confidence < 0 || reqBody.Confidence > 1 {
+		http.Error(w, "confidence must be between 0 and 1", http.StatusBadRequest)
+		return
+	}
+	
+	// Default confidence to 0.8 if not provided
+	if reqBody.Confidence == 0 {
+		reqBody.Confidence = 0.8
+	}
+	
+	log.Printf("🛡️ Moderator override for article %s: new_label=%s, confidence=%.2f, has_notes=%v", 
+		reqBody.ArticleID, reqBody.NewLabel, reqBody.Confidence, reqBody.Notes != "")
+	
+	// Calculate new FIRE score based on moderator's label and confidence
+	// Using same logic as ML model:
+	// - If label is "real": score = 50 + (confidence * 50) = range 50-100
+	// - If label is "fake": score = 50 - (confidence * 50) = range 0-50
+	var newFIREScore int
+	if reqBody.NewLabel == "real" {
+		newFIREScore = int(50 + (reqBody.Confidence * 50))
+	} else {
+		newFIREScore = int(50 - (reqBody.Confidence * 50))
+	}
+	
+	log.Printf("   Calculated new FIRE score: %d (label=%s, confidence=%.2f)", 
+		newFIREScore, reqBody.NewLabel, reqBody.Confidence)
+	
+	// Save moderator note if provided
+	if reqBody.Notes != "" {
+		if err := h.firestoreService.SaveModeratorNote(reqBody.ArticleID, reqBody.Notes, reqBody.NewLabel); err != nil {
+			log.Printf("Failed to save moderator note: %v", err)
+			http.Error(w, "Failed to save moderator note", http.StatusInternalServerError)
+			return
+		}
+	}
+	
+	// Apply the override: update fire_score and clear needs_moderation
+	if err := h.firestoreService.ApplyModeratorOverride(reqBody.ArticleID, newFIREScore); err != nil {
+		log.Printf("Failed to apply moderator override: %v", err)
+		http.Error(w, "Failed to apply override", http.StatusInternalServerError)
+		return
+	}
+	
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"message":        "Override saved successfully",
+		"new_fire_score": newFIREScore,
+	})
+}

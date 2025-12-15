@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -170,6 +171,57 @@ func (s *FirestoreService) ReportArticle(articleID string) error {
 	}
 	
 	log.Printf("Article %s marked for moderation", articleID)
+	return nil
+}
+
+// SaveModeratorNote adds a note to the mod_notes subcollection for an article
+func (s *FirestoreService) SaveModeratorNote(articleID string, note string, newLabel string) error {
+	if note == "" {
+		// No note to save
+		return nil
+	}
+	
+	// Get reference to mod_notes subcollection
+	modNotesRef := s.client.Collection("articles").Doc(articleID).Collection("mod_notes")
+	
+	// Get all existing notes to determine the next note number
+	docs, err := modNotesRef.Documents(s.ctx).GetAll()
+	if err != nil {
+		return err
+	}
+	
+	// Determine next note number (note_1, note_2, etc.)
+	noteCount := len(docs) + 1
+	noteFieldName := fmt.Sprintf("note_%d", noteCount)
+	
+	// Create a document with timestamp as ID (or use a fixed doc ID if you want all notes in one doc)
+	noteDoc := map[string]interface{}{
+		noteFieldName: note,
+	}
+	
+	// Add the note document
+	_, _, err = modNotesRef.Add(s.ctx, noteDoc)
+	if err != nil {
+		return err
+	}
+	
+	log.Printf("Saved moderator note for article %s: %s=%s", articleID, noteFieldName, note)
+	return nil
+}
+
+// ApplyModeratorOverride updates an article with moderator's override
+func (s *FirestoreService) ApplyModeratorOverride(articleID string, newFIREScore int) error {
+	// Update the article with new FIRE score and clear moderation flag
+	_, err := s.client.Collection("articles").Doc(articleID).Update(s.ctx, []firestore.Update{
+		{Path: "fire_score", Value: newFIREScore},
+		{Path: "needs_moderation", Value: false},
+	})
+	
+	if err != nil {
+		return err
+	}
+	
+	log.Printf("Applied moderator override to article %s: new_fire_score=%d", articleID, newFIREScore)
 	return nil
 }
 

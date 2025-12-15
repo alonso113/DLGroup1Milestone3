@@ -10,6 +10,7 @@ export const ModeratorConsole: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState<string | null>(null);
   const [overrideLabel, setOverrideLabel] = useState<'fake' | 'real'>('real');
+  const [confidence, setConfidence] = useState<number>(0.8);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -38,10 +39,12 @@ export const ModeratorConsole: React.FC = () => {
       await moderatorService.overrideFIREScore({
         article_id: selectedArticle,
         new_label: overrideLabel,
+        confidence: confidence,
         notes,
       });
       alert('Override saved successfully!');
       setSelectedArticle(null);
+      setConfidence(0.8);
       setNotes('');
       loadQueue();
     } catch (err) {
@@ -165,6 +168,25 @@ export const ModeratorConsole: React.FC = () => {
                     <span>Fake News</span>
                   </label>
                 </div>
+              </div>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Confidence (0-1)
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={confidence}
+                  onChange={(e) => setConfidence(parseFloat(e.target.value) || 0.8)}
+                  className="w-full border border-gray-300 rounded-md p-3"
+                  placeholder="0.8"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Higher confidence = stronger conviction in your assessment
+                </p>
               </div>
 
               <div className="mb-4">

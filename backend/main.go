@@ -47,6 +47,7 @@ func main() {
 	api.HandleFunc("/articles/{id}", articleHandler.GetArticleByID).Methods("GET", "OPTIONS")
 	api.HandleFunc("/articles", articleHandler.GetArticles).Methods("GET", "OPTIONS")
 	api.HandleFunc("/moderator/queue", articleHandler.GetModeratorQueue).Methods("GET", "OPTIONS")
+	api.HandleFunc("/moderator/override", articleHandler.OverrideFIREScore).Methods("POST", "OPTIONS")
 	
 	// Apply CORS middleware
 	r.Use(corsMiddleware)
