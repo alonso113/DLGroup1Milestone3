@@ -55,7 +55,7 @@ export const SubmitArticle: React.FC = () => {
 
   const getFIREScoreColor = (score: number): string => {
     // Higher score = safer (green), Lower score = riskier (red)
-    if (score >= 70) return 'text-fire-green';  // Safe/reliable
+    if (score >= 50) return 'text-fire-green';  // Safe/reliable
     if (score >= 35) return 'text-fire-yellow'; // Unverified
     return 'text-fire-red';                      // Likely misleading
   };

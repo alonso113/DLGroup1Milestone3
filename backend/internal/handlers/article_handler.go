@@ -105,7 +105,7 @@ func getLabelFromScore(score int) string {
 // Helper function to get category from score
 // Higher score = safer, Lower score = riskier
 func getCategoryFromScore(score int) string {
-	if score >= 70 {
+	if score >= 50 {
 		return "No risk detected"
 	} else if score >= 35 {
 		return "Unverified"

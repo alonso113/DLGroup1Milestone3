@@ -17,7 +17,7 @@ export const FIREBadge: React.FC<FIREBadgeProps> = ({ fireScore, size = 'medium'
 
   const getBadgeColor = (score: number): string => {
     // Higher score = safer (green), Lower score = riskier (red)
-    if (score >= 70) return 'bg-fire-green text-white';     // Safe/reliable
+    if (score >= 50) return 'bg-fire-green text-white';     // Safe/reliable
     if (score >= 35) return 'bg-fire-yellow text-gray-900'; // Unverified
     return 'bg-fire-red text-white';                        // Likely misleading
   };
