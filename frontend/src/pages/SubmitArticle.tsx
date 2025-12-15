@@ -33,7 +33,14 @@ export const SubmitArticle: React.FC = () => {
     try {
       setSubmitting(true);
       setError(null);
+      setResult(null); // Clear previous result
       const response = await articleService.submitArticle(formData);
+      
+      // Validate response has required fields
+      if (!response || !response.article_id || !response.fire_score) {
+        throw new Error('Invalid response from server');
+      }
+      
       setResult(response);
       
       // Reset form
@@ -45,8 +52,17 @@ export const SubmitArticle: React.FC = () => {
         url: '',
         publishedAt: new Date().toISOString().split('T')[0],
       });
-    } catch (err) {
-      setError('Failed to submit article. Please try again.');
+    } catch (err: any) {
+      // Provide more specific error messages
+      if (err.code === 'ECONNABORTED' || err.message?.includes('timeout')) {
+        setError('Request timed out. The article may still be processing. Please check the news feed in a moment.');
+      } else if (err.response?.status === 500) {
+        setError('Server error. Please try again or contact support.');
+      } else if (err.response?.data?.message) {
+        setError(`Error: ${err.response.data.message}`);
+      } else {
+        setError('Failed to submit article. Please try again.');
+      }
       console.error('Error submitting article:', err);
     } finally {
       setSubmitting(false);
