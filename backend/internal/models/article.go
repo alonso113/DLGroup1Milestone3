@@ -4,6 +4,7 @@ import "time"
 
 // Article represents a news article submission
 type Article struct {
+	ID          string    `json:"id,omitempty"`
 	Title       string    `json:"title"`
 	Content     string    `json:"content"`
 	URL         string    `json:"url"`

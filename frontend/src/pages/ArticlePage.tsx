@@ -33,8 +33,18 @@ export const ArticlePage: React.FC = () => {
     }
   };
 
+  const formatDate = (date?: Date): string => {
+    if (!date) return 'Unknown Date';
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
   const handleReport = async () => {
-    if (!article || !reportReason.trim()) return;
+    if (!article || !reportReason.trim() || !article.id) return;
 
     try {
       setReportSubmitting(true);
@@ -48,17 +58,6 @@ export const ArticlePage: React.FC = () => {
     } finally {
       setReportSubmitting(false);
     }
-  };
-
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
   };
 
   if (loading) {
@@ -101,13 +100,13 @@ export const ArticlePage: React.FC = () => {
         <article className="bg-white rounded-lg shadow-lg p-8">
           {/* Header */}
           <div className="border-b border-gray-200 pb-6 mb-6">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{article.headline}</h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">{article.title}</h1>
             
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="text-gray-600">
                 <p className="font-medium text-lg">{article.source}</p>
                 <p className="text-sm">By {article.author || 'Unknown Author'}</p>
-                <p className="text-sm">{formatDate(article.published_date)}</p>
+                <p className="text-sm">{formatDate(article.publishedAt)}</p>
               </div>
               
               <div>
@@ -118,7 +117,7 @@ export const ArticlePage: React.FC = () => {
 
           {/* Body */}
           <div className="prose prose-lg max-w-none mb-8">
-            <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{article.body}</p>
+            <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{article.content}</p>
           </div>
 
           {/* Actions */}

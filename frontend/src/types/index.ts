@@ -1,24 +1,22 @@
 // Type definitions for the FIRE News Aggregator
 
 export interface Article {
-  id: string;
-  headline: string;
-  body: string;
-  author: string;
+  id?: string;
+  title: string;
+  content: string;
+  author?: string;
   source: string;
-  published_date: string;
-  created_at: string;
+  url?: string;
+  publishedAt?: Date;
   fire_score?: FIREScore;
 }
 
 export interface FIREScore {
-  id: string;
-  article_id: string;
-  score: number; // 0-100
+  score: number; // 0-100 (the overall FIRE score)
   label: 'fake' | 'real';
   confidence: number; // 0.0-1.0
   category: 'Likely misleading' | 'Unverified' | 'No risk detected';
-  created_at: string;
+  timestamp?: Date;
 }
 
 export interface CreateArticleRequest {

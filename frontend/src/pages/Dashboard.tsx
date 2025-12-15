@@ -18,11 +18,17 @@ export const Dashboard: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('🔄 Loading articles from API...');
       const data = await articleService.getArticles();
+      console.log('✅ Received articles:', data);
+      console.log('📊 Number of articles:', data.length);
+      if (data.length > 0) {
+        console.log('📰 First article:', data[0]);
+      }
       setArticles(data);
     } catch (err) {
       setError('Failed to load articles. Please try again later.');
-      console.error('Error loading articles:', err);
+      console.error('❌ Error loading articles:', err);
     } finally {
       setLoading(false);
     }

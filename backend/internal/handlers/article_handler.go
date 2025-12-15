@@ -12,13 +12,15 @@ import (
 
 // ArticleHandler handles article-related HTTP requests
 type ArticleHandler struct {
-	mlService *services.MLService
+	mlService        *services.MLService
+	firestoreService *services.FirestoreService
 }
 
 // NewArticleHandler creates a new article handler
-func NewArticleHandler(mlService *services.MLService) *ArticleHandler {
+func NewArticleHandler(mlService *services.MLService, firestoreService *services.FirestoreService) *ArticleHandler {
 	return &ArticleHandler{
-		mlService: mlService,
+		mlService:        mlService,
+		firestoreService: firestoreService,
 	}
 }
 
@@ -73,9 +75,19 @@ func (h *ArticleHandler) SubmitArticle(w http.ResponseWriter, r *http.Request) {
 	article.FIREScore = fireScore
 	log.Printf("FIRE score calculated: %d", fireScore.OverallScore)
 	
+	// Save article to Firestore
+	articleID, err := h.firestoreService.SaveArticle(&article)
+	if err != nil {
+		log.Printf("Failed to save article to Firestore: %v", err)
+		http.Error(w, "Failed to save article", http.StatusInternalServerError)
+		return
+	}
+	
+	log.Printf("Article saved to Firestore with ID: %s", articleID)
+	
 	// Create response matching frontend expectations
 	response := map[string]interface{}{
-		"article_id": "generated-id-" + article.Title[:10], // TODO: Use actual database ID
+		"article_id": articleID,
 		"fire_score": map[string]interface{}{
 			"score":      fireScore.OverallScore,
 			"confidence": fireScore.Confidence,
@@ -113,10 +125,62 @@ func getCategoryFromScore(score int) string {
 	return "Likely misleading"
 }
 
-// GetArticles handles GET /api/v1/articles (placeholder for now)
+func getConfidenceFromScore(score int) float64 {
+    if score >= 50 {
+        // True news: score = 50 + (confidence * 50)
+        return float64(score-50) / 50.0
+    }
+    // Fake news: score = 50 - (confidence * 50)
+    return float64(50-score) / 50.0
+}
+
+// GetArticles handles GET /api/v1/articles
 func (h *ArticleHandler) GetArticles(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement database retrieval
-	// For now, return empty array
+	// Retrieve articles from Firestore (limit to 50)
+	articles, err := h.firestoreService.GetArticles(50)
+	if err != nil {
+		log.Printf("Failed to retrieve articles from Firestore: %v", err)
+		http.Error(w, "Failed to retrieve articles", http.StatusInternalServerError)
+		return
+	}
+	
+	log.Printf("Retrieved %d articles from Firestore", len(articles))
+	
+	// Transform articles to include calculated fields (label, category, confidence)
+	response := make([]map[string]interface{}, 0, len(articles))
+	for i, article := range articles {
+		log.Printf("📰 Article %d: ID=%s, Title=%s, Source=%s", i+1, article.ID, article.Title, article.Source)
+		log.Printf("   PublishedAt=%v, HasFIREScore=%v", article.PublishedAt, article.FIREScore != nil)
+		
+		articleMap := map[string]interface{}{
+			"id":          article.ID,
+			"title":       article.Title,
+			"content":     article.Content,
+			"url":         article.URL,
+			"source":      article.Source,
+			"author":      article.Author,
+			"publishedAt": article.PublishedAt,
+		}
+		
+		if article.FIREScore != nil {
+			log.Printf("   FIRE Score=%d, Confidence will be %.2f", article.FIREScore.OverallScore, getConfidenceFromScore(article.FIREScore.OverallScore))
+			articleMap["fire_score"] = map[string]interface{}{
+				"score":      article.FIREScore.OverallScore,
+				"confidence": getConfidenceFromScore(article.FIREScore.OverallScore),
+				"label":      getLabelFromScore(article.FIREScore.OverallScore),
+				"category":   getCategoryFromScore(article.FIREScore.OverallScore),
+			}
+		}
+		
+		response = append(response, articleMap)
+	}
+	
+	log.Printf("✅ Sending response with %d articles", len(response))
+	
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode([]models.Article{})
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		log.Printf("❌ Failed to encode response: %v", err)
+	} else {
+		log.Printf("✅ Response sent successfully")
+	}
 }

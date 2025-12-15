@@ -8,9 +8,10 @@ interface ArticleCardProps {
 }
 
 export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
-  const formatDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
+  const formatDate = (date?: Date): string => {
+    if (!date) return 'Unknown Date';
+    const d = date instanceof Date ? date : new Date(date);
+    return d.toLocaleDateString('en-US', { 
       year: 'numeric', 
       month: 'short', 
       day: 'numeric' 
@@ -23,7 +24,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
         <div className="flex-1">
           <Link to={`/article/${article.id}`}>
             <h2 className="text-xl font-bold text-gray-900 hover:text-blue-600 mb-2">
-              {article.headline}
+              {article.title}
             </h2>
           </Link>
           <div className="flex items-center gap-3 text-sm text-gray-600 mb-3">
@@ -31,7 +32,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
             <span>•</span>
             <span>{article.author || 'Unknown Author'}</span>
             <span>•</span>
-            <span>{formatDate(article.published_date)}</span>
+            <span>{formatDate(article.publishedAt)}</span>
           </div>
         </div>
         <div className="ml-4">
@@ -40,7 +41,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({ article }) => {
       </div>
       
       <p className="text-gray-700 mb-4 line-clamp-3">
-        {article.body.substring(0, 200)}...
+        {article.content.substring(0, 200)}...
       </p>
       
       <Link 

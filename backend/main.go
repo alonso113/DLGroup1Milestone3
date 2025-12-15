@@ -18,15 +18,24 @@ func main() {
 	// Get paths
 	pythonPath := getPythonPath()
 	scriptPath := getScriptPath()
+	credentialsPath := getFirebaseCredentialsPath()
 	
 	log.Printf("Python path: %s", pythonPath)
 	log.Printf("Script path: %s", scriptPath)
+	log.Printf("Firebase credentials path: %s", credentialsPath)
 	
 	// Initialize ML service
 	mlService := services.NewMLService(pythonPath, scriptPath)
 	
+	// Initialize Firestore service
+	firestoreService, err := services.NewFirestoreService(credentialsPath)
+	if err != nil {
+		log.Fatalf("❌ Failed to initialize Firestore: %v", err)
+	}
+	defer firestoreService.Close()
+	
 	// Initialize handlers
-	articleHandler := handlers.NewArticleHandler(mlService)
+	articleHandler := handlers.NewArticleHandler(mlService, firestoreService)
 	
 	// Setup router
 	r := mux.NewRouter()
@@ -99,3 +108,18 @@ func getScriptPath() string {
 	// Path to ml/predict.py relative to project root
 	return filepath.Join(wd, "ml", "predict.py")
 }
+
+// getFirebaseCredentialsPath returns the path to Firebase service account JSON
+func getFirebaseCredentialsPath() string {
+	if path := os.Getenv("FIREBASE_CREDENTIALS"); path != "" {
+		return path
+	}
+	
+	// Default path in backend directory
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return filepath.Join(wd, "firebase-credentials.json")
+}
+

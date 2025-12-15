@@ -4,8 +4,8 @@ import { Article, CreateArticleRequest, ReportRequest } from '../types';
 export const articleService = {
   // Get all articles with FIRE scores
   async getArticles(): Promise<Article[]> {
-    const response = await api.get<{ articles: Article[] }>('/articles');
-    return response.data.articles || [];
+    const response = await api.get<Article[]>('/articles');
+    return response.data;
   },
 
   // Get single article by ID
