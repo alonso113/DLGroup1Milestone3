@@ -12,7 +12,6 @@ export const ArticlePage: React.FC = () => {
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
   const [showReportModal, setShowReportModal] = useState(false);
-  const [reportReason, setReportReason] = useState('');
   const [reportSubmitting, setReportSubmitting] = useState(false);
 
   useEffect(() => {
@@ -44,14 +43,13 @@ export const ArticlePage: React.FC = () => {
   };
 
   const handleReport = async () => {
-    if (!article || !reportReason.trim() || !article.id) return;
+    if (!article || !article.id) return;
 
     try {
       setReportSubmitting(true);
-      await articleService.reportArticle(article.id, reportReason);
-      alert('Report submitted successfully! Moderators will review it.');
+      await articleService.reportArticle(article.id, ''); // Empty reason string
+      alert('Article reported successfully! Moderators will review it.');
       setShowReportModal(false);
-      setReportReason('');
     } catch (err) {
       alert('Failed to submit report. Please try again.');
       console.error('Error submitting report:', err);
@@ -107,6 +105,21 @@ export const ArticlePage: React.FC = () => {
                 <p className="font-medium text-lg">{article.source}</p>
                 <p className="text-sm">By {article.author || 'Unknown Author'}</p>
                 <p className="text-sm">{formatDate(article.publishedAt)}</p>
+                {article.url && (
+                  <p className="text-sm mt-2">
+                    <a 
+                      href={article.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline inline-flex items-center gap-1"
+                    >
+                      View original source
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  </p>
+                )}
               </div>
               
               <div>
@@ -135,29 +148,20 @@ export const ArticlePage: React.FC = () => {
         {showReportModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Report Incorrect Score</h3>
-              <p className="text-gray-600 mb-4">
-                Please explain why you believe the FIRE score for this article is incorrect:
+              <h3 className="text-xl font-bold text-gray-900 mb-4">Report Article</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to report this article? It will be flagged for moderator review.
               </p>
-              <textarea
-                value={reportReason}
-                onChange={(e) => setReportReason(e.target.value)}
-                className="w-full border border-gray-300 rounded-md p-3 mb-4 h-32"
-                placeholder="E.g., This article is from a reputable source and should have a higher score..."
-              />
               <div className="flex gap-3">
                 <button
                   onClick={handleReport}
-                  disabled={!reportReason.trim() || reportSubmitting}
+                  disabled={reportSubmitting}
                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
                 >
-                  {reportSubmitting ? 'Submitting...' : 'Submit Report'}
+                  {reportSubmitting ? 'Submitting...' : 'Yes, Report'}
                 </button>
                 <button
-                  onClick={() => {
-                    setShowReportModal(false);
-                    setReportReason('');
-                  }}
+                  onClick={() => setShowReportModal(false)}
                   className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
                 >
                   Cancel

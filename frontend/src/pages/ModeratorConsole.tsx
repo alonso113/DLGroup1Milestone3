@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Layout } from '../components/common/Layout';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { ModeratorQueueItem } from '../types';
+import { Article } from '../types';
 import { moderatorService } from '../services/moderatorService';
 import { Link } from 'react-router-dom';
 
 export const ModeratorConsole: React.FC = () => {
-  const [queue, setQueue] = useState<ModeratorQueueItem[]>([]);
+  const [queue, setQueue] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedArticle, setSelectedArticle] = useState<string | null>(null);
   const [overrideLabel, setOverrideLabel] = useState<'fake' | 'real'>('real');
@@ -21,9 +21,10 @@ export const ModeratorConsole: React.FC = () => {
     try {
       setLoading(true);
       const data = await moderatorService.getQueue();
+      console.log('📋 Moderation queue:', data);
       setQueue(data);
     } catch (err) {
-      console.error('Error loading queue:', err);
+      console.error('❌ Error loading queue:', err);
     } finally {
       setLoading(false);
     }
@@ -52,9 +53,9 @@ export const ModeratorConsole: React.FC = () => {
   };
 
   const getScoreColor = (score: number): string => {
-    if (score < 35) return 'text-fire-red';
-    if (score < 50) return 'text-fire-yellow';
-    return 'text-fire-green';
+    if (score < 35) return 'text-red-600';
+    if (score < 70) return 'text-yellow-600';
+    return 'text-green-600';
   };
 
   return (
@@ -82,7 +83,7 @@ export const ModeratorConsole: React.FC = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Headline
+                    Title
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Source
@@ -91,41 +92,35 @@ export const ModeratorConsole: React.FC = () => {
                     FIRE Score
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Reports
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {queue.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
+                {queue.map((article) => (
+                  <tr key={article.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <Link 
-                        to={`/article/${item.id}`}
+                        to={`/article/${article.id}`}
                         className="text-blue-600 hover:text-blue-800 font-medium"
                       >
-                        {item.headline}
+                        {article.title}
                       </Link>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{item.source}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{article.source}</td>
                     <td className="px-6 py-4">
-                      <span className={`text-lg font-bold ${getScoreColor(item.score)}`}>
-                        {item.score.toFixed(0)}
-                      </span>
-                      <div className="text-xs text-gray-500">{item.category}</div>
-                    </td>
-                    <td className="px-6 py-4">
-                      {item.report_count > 0 && (
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                          {item.report_count} {item.report_count === 1 ? 'report' : 'reports'}
-                        </span>
+                      {article.fire_score && (
+                        <>
+                          <span className={`text-lg font-bold ${getScoreColor(article.fire_score.score)}`}>
+                            {article.fire_score.score}
+                          </span>
+                          <div className="text-xs text-gray-500">{article.fire_score.category}</div>
+                        </>
                       )}
                     </td>
                     <td className="px-6 py-4">
                       <button
-                        onClick={() => setSelectedArticle(item.id)}
+                        onClick={() => setSelectedArticle(article.id || '')}
                         className="text-blue-600 hover:text-blue-800 font-medium"
                       >
                         Override

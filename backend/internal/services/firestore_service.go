@@ -52,14 +52,15 @@ func (s *FirestoreService) Close() error {
 func (s *FirestoreService) SaveArticle(article *models.Article) (string, error) {
 	// Create document in articles collection
 	docRef, _, err := s.client.Collection("articles").Add(s.ctx, map[string]interface{}{
-		"title":        article.Title,
-		"content":      article.Content,
-		"url":          article.URL,
-		"source":       article.Source,
-		"author":       article.Author,
-		"published_at": article.PublishedAt,
-		"submitted_at": time.Now(),
-		"fire_score":   article.FIREScore.OverallScore,
+		"title":            article.Title,
+		"content":          article.Content,
+		"url":              article.URL,
+		"source":           article.Source,
+		"author":           article.Author,
+		"published_at":     article.PublishedAt,
+		"submitted_at":     time.Now(),
+		"fire_score":       article.FIREScore.OverallScore,
+		"needs_moderation": false, // Initialize as false for new articles
 	})
 
 	if err != nil {
@@ -156,6 +157,72 @@ func (s *FirestoreService) GetArticleByID(id string) (*models.Article, error) {
 	}
 
 	return article, nil
+}
+
+// ReportArticle marks an article as needing moderation
+func (s *FirestoreService) ReportArticle(articleID string) error {
+	_, err := s.client.Collection("articles").Doc(articleID).Update(s.ctx, []firestore.Update{
+		{Path: "needs_moderation", Value: true},
+	})
+	
+	if err != nil {
+		return err
+	}
+	
+	log.Printf("Article %s marked for moderation", articleID)
+	return nil
+}
+
+// GetModeratorQueue retrieves articles that need moderation, sorted by fire_score ascending (lowest/worst first)
+func (s *FirestoreService) GetModeratorQueue(limit int) ([]*models.Article, error) {
+	query := s.client.Collection("articles").
+		Where("needs_moderation", "==", true).
+		OrderBy("fire_score", firestore.Asc).
+		Limit(limit)
+
+	docs, err := query.Documents(s.ctx).GetAll()
+	if err != nil {
+		return nil, err
+	}
+
+	articles := make([]*models.Article, 0, len(docs))
+	for _, doc := range docs {
+		data := doc.Data()
+
+		// Parse timestamps
+		publishedAt, _ := data["published_at"].(time.Time)
+		submittedAt, _ := data["submitted_at"].(time.Time)
+		
+		// Get fire_score as int or float64
+		var fireScore int
+		switch v := data["fire_score"].(type) {
+		case int64:
+			fireScore = int(v)
+		case float64:
+			fireScore = int(v)
+		default:
+			fireScore = 0
+		}
+
+		article := &models.Article{
+			ID:          doc.Ref.ID,
+			Title:       getStringField(data, "title"),
+			Content:     getStringField(data, "content"),
+			URL:         getStringField(data, "url"),
+			Source:      getStringField(data, "source"),
+			Author:      getStringField(data, "author"),
+			PublishedAt: publishedAt,
+			FIREScore: &models.FIREScore{
+				OverallScore: fireScore,
+				Timestamp:    submittedAt,
+			},
+		}
+
+		articles = append(articles, article)
+	}
+
+	log.Printf("Retrieved %d articles needing moderation", len(articles))
+	return articles, nil
 }
 
 // Helper function to safely get string field

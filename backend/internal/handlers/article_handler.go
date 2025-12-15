@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
+	
 	"backend/internal/models"
 	"backend/internal/services"
 )
@@ -183,4 +185,124 @@ func (h *ArticleHandler) GetArticles(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Printf("✅ Response sent successfully")
 	}
+}
+
+// ReportArticle handles POST /api/v1/articles/{id}/report
+func (h *ArticleHandler) ReportArticle(w http.ResponseWriter, r *http.Request) {
+	// Get article ID from URL
+	vars := mux.Vars(r)
+	articleID := vars["id"]
+	
+	if articleID == "" {
+		http.Error(w, "Article ID is required", http.StatusBadRequest)
+		return
+	}
+	
+	// Parse request body (optional reason field)
+	var reqBody struct {
+		Reason string `json:"reason"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+		// Ignore parse errors - reason is optional
+	}
+	
+	log.Printf("📢 Reporting article %s for moderation. Reason: %s", articleID, reqBody.Reason)
+	
+	// Mark article as needing moderation in Firestore
+	if err := h.firestoreService.ReportArticle(articleID); err != nil {
+		log.Printf("Failed to report article: %v", err)
+		http.Error(w, "Failed to report article", http.StatusInternalServerError)
+		return
+	}
+	
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Article reported successfully",
+	})
+}
+
+// GetModeratorQueue handles GET /api/v1/moderator/queue
+func (h *ArticleHandler) GetModeratorQueue(w http.ResponseWriter, r *http.Request) {
+	// Retrieve articles needing moderation (limit to 50)
+	articles, err := h.firestoreService.GetModeratorQueue(50)
+	if err != nil {
+		log.Printf("Failed to retrieve moderator queue: %v", err)
+		http.Error(w, "Failed to retrieve moderator queue", http.StatusInternalServerError)
+		return
+	}
+	
+	log.Printf("Retrieved %d articles in moderation queue", len(articles))
+	
+	// Transform articles to include calculated fields
+	response := make([]map[string]interface{}, 0, len(articles))
+	for _, article := range articles {
+		articleMap := map[string]interface{}{
+			"id":          article.ID,
+			"title":       article.Title,
+			"content":     article.Content,
+			"url":         article.URL,
+			"source":      article.Source,
+			"author":      article.Author,
+			"publishedAt": article.PublishedAt,
+		}
+		
+		if article.FIREScore != nil {
+			articleMap["fire_score"] = map[string]interface{}{
+				"score":      article.FIREScore.OverallScore,
+				"confidence": getConfidenceFromScore(article.FIREScore.OverallScore),
+				"label":      getLabelFromScore(article.FIREScore.OverallScore),
+				"category":   getCategoryFromScore(article.FIREScore.OverallScore),
+			}
+		}
+		
+		response = append(response, articleMap)
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+// GetArticleByID handles GET /api/v1/articles/{id}
+func (h *ArticleHandler) GetArticleByID(w http.ResponseWriter, r *http.Request) {
+	// Get article ID from URL
+	vars := mux.Vars(r)
+	articleID := vars["id"]
+	
+	if articleID == "" {
+		http.Error(w, "Article ID is required", http.StatusBadRequest)
+		return
+	}
+	
+	log.Printf("Fetching article with ID: %s", articleID)
+	
+	// Retrieve article from Firestore
+	article, err := h.firestoreService.GetArticleByID(articleID)
+	if err != nil {
+		log.Printf("Failed to retrieve article: %v", err)
+		http.Error(w, "Article not found", http.StatusNotFound)
+		return
+	}
+	
+	// Transform article to include calculated fields
+	response := map[string]interface{}{
+		"id":          article.ID,
+		"title":       article.Title,
+		"content":     article.Content,
+		"url":         article.URL,
+		"source":      article.Source,
+		"author":      article.Author,
+		"publishedAt": article.PublishedAt,
+	}
+	
+	if article.FIREScore != nil {
+		response["fire_score"] = map[string]interface{}{
+			"score":      article.FIREScore.OverallScore,
+			"confidence": getConfidenceFromScore(article.FIREScore.OverallScore),
+			"label":      getLabelFromScore(article.FIREScore.OverallScore),
+			"category":   getCategoryFromScore(article.FIREScore.OverallScore),
+		}
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

@@ -43,7 +43,10 @@ func main() {
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
 	api.HandleFunc("/partner/submit", articleHandler.SubmitArticle).Methods("POST", "OPTIONS")
+	api.HandleFunc("/articles/{id}/report", articleHandler.ReportArticle).Methods("POST", "OPTIONS")
+	api.HandleFunc("/articles/{id}", articleHandler.GetArticleByID).Methods("GET", "OPTIONS")
 	api.HandleFunc("/articles", articleHandler.GetArticles).Methods("GET", "OPTIONS")
+	api.HandleFunc("/moderator/queue", articleHandler.GetModeratorQueue).Methods("GET", "OPTIONS")
 	
 	// Apply CORS middleware
 	r.Use(corsMiddleware)

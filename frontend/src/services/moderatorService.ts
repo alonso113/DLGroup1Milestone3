@@ -1,11 +1,11 @@
 import { api } from './api';
-import { ModeratorQueueItem, ModeratorOverrideRequest } from '../types';
+import { Article, ModeratorOverrideRequest } from '../types';
 
 export const moderatorService = {
-  // Get moderation queue
-  async getQueue(): Promise<ModeratorQueueItem[]> {
-    const response = await api.get<{ queue: ModeratorQueueItem[] }>('/moderator/queue');
-    return response.data.queue || [];
+  // Get moderation queue (articles reported by users)
+  async getQueue(): Promise<Article[]> {
+    const response = await api.get<Article[]>('/moderator/queue');
+    return response.data;
   },
 
   // Override FIRE score
