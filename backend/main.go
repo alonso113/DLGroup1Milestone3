@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 
 	"github.com/gorilla/mux"
@@ -97,8 +98,20 @@ func getPythonPath() string {
 	if path := os.Getenv("PYTHON_PATH"); path != "" {
 		return path
 	}
-	// Try common paths
-	return "python" // Windows usually has 'python' in PATH
+	
+	// Try common Python executables in order of preference
+	// python3 is standard on Mac/Linux, python on Windows
+	candidates := []string{"python3", "python"}
+	
+	for _, candidate := range candidates {
+		// Check if executable exists in PATH
+		if _, err := exec.LookPath(candidate); err == nil {
+			return candidate
+		}
+	}
+	
+	// Fallback to python3 (will fail gracefully if not found)
+	return "python3"
 }
 
 // getScriptPath returns the absolute path to predict.py

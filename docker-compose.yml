@@ -1,0 +1,31 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:8080/api/v1
+    depends_on:
+      - backend
+    networks:
+      - fire-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PYTHON_PATH=python3
+      - PORT=8080
+    volumes:
+      - ./backend/firebase-credentials.json:/app/firebase-credentials.json:ro
+    networks:
+      - fire-network
+
+networks:
+  fire-network:
+    driver: bridge

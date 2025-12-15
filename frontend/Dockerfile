@@ -1,27 +1,31 @@
-# Vite Build Tool
-FROM node:18-alpine as build
+# Build stage
+FROM node:18-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm install
 
-# Copy source
+# Install dependencies
+RUN npm ci
+
+# Copy source code
 COPY . .
 
-# Build
+# Build the application
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
 
-# Copy built files
-COPY --from=build /app/dist /usr/share/nginx/html
+# Copy built assets from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx config
+# Copy nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+# Expose port
+EXPOSE 3000
 
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

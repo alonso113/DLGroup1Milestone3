@@ -1,5 +1,5 @@
 import { api } from './api';
-import { Article, CreateArticleRequest, ReportRequest } from '../types';
+import { Article, CreateArticleRequest } from '../types';
 
 export const articleService = {
   // Get all articles with FIRE scores

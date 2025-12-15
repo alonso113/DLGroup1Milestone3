@@ -4,7 +4,54 @@
 
 A full-stack application that uses a fine-tuned DistilBERT model to assess news article credibility and provide risk scores (0-100) to help readers navigate today's information landscape.
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Docker - Recommended)
+
+### Prerequisites
+- **Docker** and **Docker Compose** - [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- **Git LFS** (for 250MB model file) - [Install](https://git-lfs.github.com/)
+
+### Installation
+
+```bash
+# 1. Clone repository with Git LFS
+git lfs install
+git clone https://github.com/alonso113/DLGroup1Milestone3.git
+cd DLGroup1Milestone3
+
+# Verify model downloaded (should be ~250MB, not 130 bytes)
+ls -lh backend/ml/bestmodel_3_run5.pt
+
+# 2. Build and start services
+docker-compose up --build
+
+# ✅ Access the application at http://localhost:3000
+```
+
+**That's it!** Docker handles all dependencies (Go, Python, Node, nginx).
+
+### Useful Docker Commands
+
+```bash
+# Stop services
+docker-compose down
+
+# View logs
+docker-compose logs -f          # All services
+docker-compose logs -f backend  # Backend only
+
+# Rebuild after code changes
+docker-compose up --build --force-recreate
+
+# Clean rebuild (remove cached layers)
+docker-compose build --no-cache
+docker-compose up
+```
+
+---
+
+## 🔧 Manual Setup (Alternative)
+
+If you prefer running services locally without Docker:
 
 ### Prerequisites
 - **Git LFS** (for 250MB model file) - [Install](https://git-lfs.github.com/)
@@ -51,6 +98,7 @@ npm run dev
 
 ## 🏗️ Architecture
 
+### System Architecture
 ```
 ┌─────────────┐      ┌──────────────┐      ┌─────────────┐
 │   React     │─────▶│   Go API     │─────▶│  Python ML  │
@@ -65,36 +113,79 @@ npm run dev
                      └─────────────┘
 ```
 
+### Docker Architecture
+```
+┌─────────────────────────────────────────────────────────┐
+│                    Docker Host                          │
+│                                                         │
+│  ┌─────────────────────────────────────────────────┐  │
+│  │         fire-network (Bridge Network)           │  │
+│  │                                                 │  │
+│  │  ┌────────────────┐      ┌──────────────────┐ │  │
+│  │  │   Frontend     │      │     Backend      │ │  │
+│  │  │                │      │                  │ │  │
+│  │  │ React + Nginx  │─────▶│  Go + Python ML  │ │  │
+│  │  │ Port: 3000     │      │  Port: 8080      │ │  │
+│  │  └────────────────┘      └──────────────────┘ │  │
+│  │         │                         │           │  │
+│  └─────────┼─────────────────────────┼───────────┘  │
+│            │                         │               │
+└────────────┼─────────────────────────┼───────────────┘
+             │                         │
+             ▼                         ▼
+     localhost:3000           firebase-credentials.json
+                              (volume mount)
+```
+
 ### Tech Stack
 
 **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + Firebase Auth  
 **Backend**: Go 1.21 + Gorilla Mux + Firebase Admin SDK  
 **ML**: Python + PyTorch + Transformers (DistilBERT)  
 **Database**: Firebase Firestore  
-**Model**: 250MB trained model (Git LFS tracked)
+**Model**: 250MB trained model (Git LFS tracked)  
+**Deployment**: Docker + Docker Compose
+
+### Container Details
+
+**Frontend Container:**
+- Multi-stage build: `node:18-alpine` (builder) → `nginx:alpine` (runtime)
+- Builds React app with Vite, serves via Nginx
+- Proxies `/api/*` requests to backend
+- Size: ~500MB
+
+**Backend Container:**
+- Multi-stage build: `golang:1.21-alpine` (builder) → `python:3.11-slim` (runtime)
+- Compiles Go binary, installs Python ML dependencies
+- Includes 250MB DistilBERT model
+- Size: ~1.5GB
 
 ## 📁 Project Structure
 
 ```
 DLGroup1Milestone3/
+├── docker-compose.yml     # Docker orchestration
 ├── frontend/
+│   ├── Dockerfile         # React + Nginx production image
+│   ├── nginx.conf         # API proxy configuration
 │   └── src/
 │       ├── pages/          # Dashboard, ArticlePage, ModeratorConsole
 │       ├── components/     # FIREBadge, ArticleCard, Header
 │       ├── services/       # API integration layer
 │       └── types/          # TypeScript definitions
 │
-├── backend/
-│   ├── main.go            # Server entry point
-│   ├── internal/
-│   │   ├── handlers/      # HTTP endpoints
-│   │   ├── services/      # Business logic + ML service
-│   │   └── models/        # Data structures
-│   └── ml/
-│       ├── predict.py     # ML inference script
-│       └── bestmodel_3_run5.pt  # Trained model (250MB)
-│
-└── firebase-credentials.json  # Firebase service account
+└── backend/
+    ├── Dockerfile         # Go + Python multi-stage build
+    ├── main.go            # Server entry point
+    ├── firebase-credentials.json  # Firebase service account
+    ├── internal/
+    │   ├── handlers/      # HTTP endpoints
+    │   ├── services/      # Business logic + ML service
+    │   └── models/        # Data structures
+    └── ml/
+        ├── predict.py     # ML inference script
+        ├── requirements.txt  # Python dependencies
+        └── bestmodel_3_run5.pt  # Trained model (250MB)
 ```
 
 ## 🔧 Setup Details
@@ -168,6 +259,19 @@ else:  # fake
 
 ## 🐛 Troubleshooting
 
+### Docker Issues
+| Issue | Solution |
+|-------|----------|
+| Model file only 130 bytes in container? | Run `git lfs pull` before `docker-compose build` |
+| "Cannot connect to backend" | Check logs: `docker-compose logs backend` |
+| "Firebase permission denied" | Verify `firebase-credentials.json` exists in `backend/` directory |
+| Port 3000 or 8080 already in use? | Stop conflicting services or change ports in `docker-compose.yml` |
+| Changes not reflected after rebuild? | Use `docker-compose up --build --force-recreate` |
+| Backend container exits immediately | Check logs for errors. Common: missing/invalid firebase credentials, model not found |
+| Out of disk space | Clean up: `docker system prune -a && docker volume prune` |
+| First inference takes 20+ seconds | Normal - PyTorch model loading. Subsequent requests are 5-10s |
+
+### Manual Setup Issues
 | Issue | Solution |
 |-------|----------|
 | Model file only 130 bytes? | Install Git LFS: `git lfs install && git lfs pull` |
@@ -175,6 +279,11 @@ else:  # fake
 | "Firebase permission denied" | Check `firebase-credentials.json` in `backend/` directory |
 | "Python not found" | Set path: `$env:PYTHON_PATH="python"` (PowerShell) |
 | Article submission timeout? | ML inference takes ~5-20s on first run (model loading) |
+
+### Performance Notes
+- **Backend Memory**: Uses ~2GB RAM (PyTorch + model). Ensure Docker Desktop has 4GB+ allocated
+- **First Inference**: 10-20 seconds (model loading). Keep containers running for faster subsequent requests
+- **Build Time**: First build takes 5-10 minutes (downloads dependencies). Cached builds are faster
 
 ## 👥 Team
 
