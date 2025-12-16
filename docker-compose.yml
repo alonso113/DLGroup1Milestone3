@@ -11,6 +11,7 @@ services:
       - backend
     networks:
       - fire-network
+    image: osnola/fire-frontend:latest
 
   backend:
     build:
@@ -25,6 +26,7 @@ services:
       - ./backend/firebase-credentials.json:/app/firebase-credentials.json:ro
     networks:
       - fire-network
+    image: osnola/fire-backend:latest
 
 networks:
   fire-network:

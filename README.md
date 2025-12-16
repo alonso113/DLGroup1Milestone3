@@ -21,8 +21,8 @@ cd DLGroup1Milestone3
 # Verify model downloaded (should be ~250MB, not 130 bytes)
 ls -lh backend/ml/bestmodel_3_run5.pt
 
-# 2. Build and start services
-docker-compose up --build
+# 2. Start services
+docker-compose up
 
 # ✅ Access the application at http://localhost:3000
 ```
