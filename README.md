@@ -29,24 +29,6 @@ docker-compose up --build
 
 **That's it!** Docker handles all dependencies (Go, Python, Node, nginx).
 
-### Useful Docker Commands
-
-```bash
-# Stop services
-docker-compose down
-
-# View logs
-docker-compose logs -f          # All services
-docker-compose logs -f backend  # Backend only
-
-# Rebuild after code changes
-docker-compose up --build --force-recreate
-
-# Clean rebuild (remove cached layers)
-docker-compose build --no-cache
-docker-compose up
-```
-
 ---
 
 ## 🔧 Manual Setup (Alternative)
