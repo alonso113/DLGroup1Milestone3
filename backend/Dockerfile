@@ -30,11 +30,21 @@ RUN apt-get update && apt-get install -y \
 # Copy Go binary from builder
 COPY --from=go-builder /app/fire-backend /app/fire-backend
 
+# Copy Firebase credentials directly into image
+COPY firebase-credentials.json /app/firebase-credentials.json
+
 # Copy Python ML files and requirements
 COPY ml/ /app/ml/
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r /app/ml/requirements.txt
+# Install Python dependencies (CPU-only PyTorch to reduce image size)
+RUN pip install --no-cache-dir \
+    torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir \
+    transformers>=4.30.0 \
+    numpy>=1.24.0 && \
+    # Clean up pip cache and unnecessary files
+    rm -rf /root/.cache/pip && \
+    find /usr/local/lib/python3.11 -type d -name __pycache__ -exec rm -r {} + 2>/dev/null || true
 
 # Copy internal files
 COPY internal/ /app/internal/

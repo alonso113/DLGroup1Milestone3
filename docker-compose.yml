@@ -22,8 +22,6 @@ services:
     environment:
       - PYTHON_PATH=python3
       - PORT=8080
-    volumes:
-      - ./backend/firebase-credentials.json:/app/firebase-credentials.json:ro
     networks:
       - fire-network
     image: osnola/fire-backend:latest
