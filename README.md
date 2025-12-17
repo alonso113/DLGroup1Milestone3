@@ -16,7 +16,7 @@ cd DLGroup1Milestone3
 # 2. Start services (images will be pulled from DockerHub)
 docker-compose up
 
-# ✅ Access the application at http://localhost:3000
+# Access the application at http://localhost:3000
 ```
 ---
 
@@ -40,7 +40,7 @@ ls -lh backend/ml/bestmodel_3_run5.pt
 # 2. Start services (builds images locally)
 docker-compose up --build
 
-# ✅ Access the application at http://localhost:3000
+# Access the application at http://localhost:3000
 ```
 
 ---
