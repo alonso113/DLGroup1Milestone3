@@ -6,6 +6,9 @@ A full-stack application that uses a fine-tuned DistilBERT model to assess news 
 
 ## Quick Start (Docker - Easiest)
 
+#### Prerequisites
+- **Docker** and **Docker Compose** - [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
 ### Option 1: Pull Prebuilt Images from DockerHub (No Git LFS Needed)
 
 ```bash
