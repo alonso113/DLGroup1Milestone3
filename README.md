@@ -9,10 +9,10 @@ A full-stack application that uses a fine-tuned DistilBERT model to assess news 
 #### Prerequisites
 - **Docker** and **Docker Compose** - [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-### Option 1: Pull Prebuilt Images from DockerHub (No Git LFS Needed)
+### Option 1: Pull Prebuilt Images from DockerHub
 
 ```bash
-# 1. Clone the repository (no Git LFS required)
+# 1. Clone the repository
 git clone https://github.com/alonso113/DLGroup1Milestone3.git
 cd DLGroup1Milestone3
 
