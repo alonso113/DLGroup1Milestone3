@@ -137,16 +137,16 @@ func (s *FirestoreService) GetArticles(limit int) ([]*models.Article, error) {
 		return nil, err
 	}
 
-	articles := make([]*models.Article, 0, len(result.Documents))
+	type sortableArticle struct {
+		Article     *models.Article
+		SubmittedAt time.Time
+	}
+	sortable := make([]sortableArticle, 0, len(result.Documents))
 	for _, doc := range result.Documents {
 		fields := doc.Fields
-
-		// Helper to extract Firestore typed values
-
-		// Extract document ID from the name
 		parts := strings.Split(doc.Name, "/")
 		docID := parts[len(parts)-1]
-
+		submittedAt := getTime(fields, "submitted_at")
 		article := &models.Article{
 			ID:           docID,
 			Title:        getString(fields, "title"),
@@ -158,12 +158,19 @@ func (s *FirestoreService) GetArticles(limit int) ([]*models.Article, error) {
 			ModelVersion: getString(fields, "model_version"),
 			FIREScore: &models.FIREScore{
 				OverallScore: getInt(fields, "fire_score"),
-				Timestamp:    getTime(fields, "submitted_at"),
+				Timestamp:    submittedAt,
 			},
 		}
-		articles = append(articles, article)
+		sortable = append(sortable, sortableArticle{Article: article, SubmittedAt: submittedAt})
 	}
-
+	// Sort by submitted_at descending (most recent first)
+	sort.Slice(sortable, func(i, j int) bool {
+		return sortable[i].SubmittedAt.After(sortable[j].SubmittedAt)
+	})
+	articles := make([]*models.Article, 0, len(sortable))
+	for _, s := range sortable {
+		articles = append(articles, s.Article)
+	}
 	return articles, nil
 }
 
