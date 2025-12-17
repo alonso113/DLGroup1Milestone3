@@ -42,17 +42,19 @@ export const FIREBadge: React.FC<FIREBadgeProps> = ({ fireScore, size = 'medium'
   };
 
   return (
-    <div className="inline-block">
-      <div
-        className={`inline-flex items-center gap-2 rounded-full font-semibold ${getBadgeColor(
-          fireScore.score
-        )} ${sizeClasses[size]}`}
-        title={`FIRE Score: ${fireScore.score.toFixed(1)}/100 | Confidence: ${(fireScore.confidence * 100).toFixed(1)}%`}
-      >
-        <span>{getBadgeIcon(fireScore.category)}</span>
-        <span>FIRE: {fireScore.score.toFixed(0)}</span>
+    <div className="inline-block w-full">
+      <div className="flex justify-end">
+        <div
+          className={`inline-flex items-center gap-2 rounded-full font-semibold ${getBadgeColor(
+            fireScore.score
+          )} ${sizeClasses[size]}`}
+          title={`FIRE Score: ${fireScore.score.toFixed(1)}/100 | Confidence: ${(fireScore.confidence * 100).toFixed(1)}%`}
+        >
+          <span>{getBadgeIcon(fireScore.category)}</span>
+          <span>FIRE: {fireScore.score.toFixed(0)}</span>
+        </div>
       </div>
-      <div className="text-xs text-gray-600 mt-1">
+      <div className="text-xs text-gray-600 mt-1 text-right w-full">
         {fireScore.category} • {(fireScore.confidence * 100).toFixed(0)}% confidence
       </div>
     </div>
