@@ -30,9 +30,6 @@ RUN apt-get update && apt-get install -y \
 # Copy Go binary from builder
 COPY --from=go-builder /app/fire-backend /app/fire-backend
 
-# Copy Firebase credentials directly into image
-COPY firebase-credentials.json /app/firebase-credentials.json
-
 # Copy Python ML files and requirements
 COPY ml/ /app/ml/
 
@@ -52,6 +49,7 @@ COPY internal/ /app/internal/
 # Set environment variables
 ENV PYTHON_PATH=python3
 ENV PORT=8080
+ENV FIREBASE_PROJECT_ID=deeplearningmilestone3
 
 # Expose port
 EXPOSE 8080

@@ -8,39 +8,36 @@ import (
 	"path/filepath"
 
 	"github.com/gorilla/mux"
-	
+
 	"backend/internal/handlers"
 	"backend/internal/services"
 )
 
 func main() {
 	log.Println("🚀 FIRE News Backend Starting...")
-	
+
 	// Get paths
 	pythonPath := getPythonPath()
 	scriptPath := getScriptPath()
-	credentialsPath := getFirebaseCredentialsPath()
-	
+
 	log.Printf("Python path: %s", pythonPath)
 	log.Printf("Script path: %s", scriptPath)
-	log.Printf("Firebase credentials path: %s", credentialsPath)
-	
+
 	// Initialize ML service
 	mlService := services.NewMLService(pythonPath, scriptPath)
-	
-	// Initialize Firestore service
-	firestoreService, err := services.NewFirestoreService(credentialsPath)
+
+	// Initialize Firestore service (no credentials needed with public rules)
+	firestoreService, err := services.NewFirestoreService()
 	if err != nil {
 		log.Fatalf("❌ Failed to initialize Firestore: %v", err)
 	}
-	defer firestoreService.Close()
-	
+
 	// Initialize handlers
 	articleHandler := handlers.NewArticleHandler(mlService, firestoreService)
-	
+
 	// Setup router
 	r := mux.NewRouter()
-	
+
 	// API routes
 	api := r.PathPrefix("/api/v1").Subrouter()
 	api.HandleFunc("/partner/submit", articleHandler.SubmitArticle).Methods("POST", "OPTIONS")
@@ -49,17 +46,17 @@ func main() {
 	api.HandleFunc("/articles", articleHandler.GetArticles).Methods("GET", "OPTIONS")
 	api.HandleFunc("/moderator/queue", articleHandler.GetModeratorQueue).Methods("GET", "OPTIONS")
 	api.HandleFunc("/moderator/override", articleHandler.OverrideFIREScore).Methods("POST", "OPTIONS")
-	
+
 	// Apply CORS middleware
 	r.Use(corsMiddleware)
 	r.Use(loggingMiddleware)
-	
+
 	// Health check
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	}).Methods("GET")
-	
+
 	// Start server
 	port := "8080"
 	log.Printf("✅ Server running on http://localhost:%s", port)
@@ -74,13 +71,13 @@ func corsMiddleware(next http.Handler) http.Handler {
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 		w.Header().Set("Access-Control-Max-Age", "3600")
-		
+
 		// Handle preflight
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 }
@@ -98,18 +95,18 @@ func getPythonPath() string {
 	if path := os.Getenv("PYTHON_PATH"); path != "" {
 		return path
 	}
-	
+
 	// Try common Python executables in order of preference
 	// python3 is standard on Mac/Linux, python on Windows
 	candidates := []string{"python3", "python"}
-	
+
 	for _, candidate := range candidates {
 		// Check if executable exists in PATH
 		if _, err := exec.LookPath(candidate); err == nil {
 			return candidate
 		}
 	}
-	
+
 	// Fallback to python3 (will fail gracefully if not found)
 	return "python3"
 }
@@ -121,22 +118,7 @@ func getScriptPath() string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	
+
 	// Path to ml/predict.py relative to project root
 	return filepath.Join(wd, "ml", "predict.py")
 }
-
-// getFirebaseCredentialsPath returns the path to Firebase service account JSON
-func getFirebaseCredentialsPath() string {
-	if path := os.Getenv("FIREBASE_CREDENTIALS"); path != "" {
-		return path
-	}
-	
-	// Default path in backend directory
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-	return filepath.Join(wd, "firebase-credentials.json")
-}
-

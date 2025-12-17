@@ -115,18 +115,19 @@ npm run dev
 └────────────┼─────────────────────────┼──────────────┘
              │                         │
              ▼                         ▼
-     localhost:3000           firebase-credentials.json
-                              (volume mount)
+     localhost:3000            Firestore (public rules)
 ```
 
 ### Tech Stack
 
 **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + Firebase Auth  
-**Backend**: Go 1.21 + Gorilla Mux + Firebase Admin SDK  
+**Backend**: Go 1.24 + Gorilla Mux  
 **ML**: Python + PyTorch + Transformers (DistilBERT)  
-**Database**: Firebase Firestore  
+**Database**: Firebase Firestore (public read/write rules)  
 **Model**: 250MB trained model (Git LFS tracked)  
 **Deployment**: Docker + Docker Compose
+
+> **Note**: This project uses **public Firebase Firestore rules** that allow anyone to read/write data without authentication. This is configured for demo purposes. The backend connects directly to Firestore without requiring service account credentials.
 
 ### Container Details
 
@@ -159,7 +160,6 @@ DLGroup1Milestone3/
 └── backend/
     ├── Dockerfile         # Go + Python multi-stage build
     ├── main.go            # Server entry point
-    ├── firebase-credentials.json  # Firebase service account
     ├── internal/
     │   ├── handlers/      # HTTP endpoints
     │   ├── services/      # Business logic + ML service
