@@ -81,7 +81,7 @@ npm run dev
 
 ## Features
 
-- **News Feed** - Browse articles with real-time FIRE scores
+- **News Feed** - Browse articles with FIRE scores
 - **ML Risk Assessment** - DistilBERT-powered scoring (0-100)
   - 🟢 50-100: Real news (low risk)
   - 🟡 35-49: Unverified
