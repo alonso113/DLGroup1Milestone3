@@ -97,9 +97,9 @@ npm run dev
 ### System Architecture
 ```
 ┌─────────────┐      ┌──────────────┐      ┌─────────────┐
-│   React     │─────▶│   Go API     │─────▶│  Python ML  │
+│   React     │────▶│   Go API     │─────▶│  Python ML  │
 │  Frontend   │      │   Backend    │      │  (PyTorch)  │
-│  Port 3000  │◀─────│   Port 8080  │◀─────│  DistilBERT │
+│  Port 3000  │◀────│   Port 8080  │◀─────│  DistilBERT │
 └─────────────┘      └──────┬───────┘      └─────────────┘
                             │
                             ▼
