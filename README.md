@@ -4,13 +4,29 @@
 
 A full-stack application that uses a fine-tuned DistilBERT model to assess news article credibility and provide risk scores (0-100) to help readers navigate today's information landscape.
 
-## 🚀 Quick Start (Docker - Recommended)
+## 🚀 Quick Start (Docker - Easiest)
 
-### Prerequisites
+### Option 1: Pull Prebuilt Images from DockerHub (No Git LFS Needed)
+
+```bash
+# 1. Clone the repository (no Git LFS required)
+git clone https://github.com/alonso113/DLGroup1Milestone3.git
+cd DLGroup1Milestone3
+
+# 2. Start services (images will be pulled from DockerHub)
+docker-compose up
+
+# ✅ Access the application at http://localhost:3000
+```
+---
+
+### Option 2: Build Images Locally (Requires Git LFS)
+
+#### Prerequisites
 - **Docker** and **Docker Compose** - [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - **Git LFS** (for 250MB model file) - [Install](https://git-lfs.github.com/)
 
-### Installation
+#### Installation
 
 ```bash
 # 1. Clone repository with Git LFS
@@ -21,8 +37,8 @@ cd DLGroup1Milestone3
 # Verify model downloaded (should be ~250MB, not 130 bytes)
 ls -lh backend/ml/bestmodel_3_run5.pt
 
-# 2. Start services
-docker-compose up
+# 2. Start services (builds images locally)
+docker-compose up --build
 
 # ✅ Access the application at http://localhost:3000
 ```
@@ -52,13 +68,13 @@ cd DLGroup1Milestone3
 # Verify model downloaded (should be ~250MB, not 130 bytes)
 ls -lh backend/ml/bestmodel_3_run5.pt
 
-# 2. Start Backend (new terminal)
+# 2. Start Backend 
 cd backend
 go mod tidy
 cd ml && pip install -r requirements.txt && cd ..
 go run main.go
 
-# 3. Start Frontend
+# 3. Start Frontend (new terminal)
 cd frontend
 npm install
 npm run dev
