@@ -22,10 +22,10 @@ export const ModeratorConsole: React.FC = () => {
     try {
       setLoading(true);
       const data = await moderatorService.getQueue();
-      console.log('📋 Moderation queue:', data);
+      console.log('Moderation queue:', data);
       setQueue(data);
     } catch (err) {
-      console.error('❌ Error loading queue:', err);
+      console.error('Error loading queue:', err);
     } finally {
       setLoading(false);
     }

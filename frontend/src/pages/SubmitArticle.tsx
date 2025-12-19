@@ -75,7 +75,6 @@ export const SubmitArticle: React.FC = () => {
     if (score >= 35) return 'text-fire-yellow'; // Unverified
     return 'text-fire-red';                      // Likely misleading
   };
-  // revisit which fields are here, prob dont need all the ones actually here
   return (
     <Layout>
       <div className="max-w-3xl mx-auto">
