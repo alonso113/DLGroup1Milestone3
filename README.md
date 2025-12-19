@@ -86,9 +86,9 @@ npm run dev
 
 - **News Feed** - Browse articles with FIRE scores
 - **ML Risk Assessment** - DistilBERT-powered scoring (0-100)
-  - 🟢 50-100: Real news (low risk)
-  - 🟡 35-49: Unverified
-  - 🔴 0-34: Likely misleading (high risk)
+  - 50-100: Real news (low risk)
+  - 35-49: Unverified
+  - 0-34: Likely misleading (high risk)
 - **User Reporting** - Flag incorrect scores for review
 - **Moderator Console** - Review queue with override capabilities
 - **Moderator Notes** - Track override decisions for model retraining
@@ -115,7 +115,7 @@ npm run dev
 ### Docker Architecture
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    Docker Host                      │
+│                    Docker Container                 │
 │                                                     │
 │  ┌───────────────────────────────────────────────┐  │
 │  │         fire-network (Bridge Network)         │  │
@@ -132,7 +132,7 @@ npm run dev
 └────────────┼─────────────────────────┼──────────────┘
              │                         │
              ▼                         ▼
-     localhost:3000            Firestore (public rules)
+     localhost:3000                Firestore 
 ```
 
 ### Tech Stack
@@ -140,7 +140,7 @@ npm run dev
 **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + Nginx + Firebase Auth  
 **Backend**: Go 1.24 + Gorilla Mux  
 **ML**: Python + PyTorch + Transformers (DistilBERT)  
-**Database**: Firebase Firestore (public read/write rules)  
+**Database**: Firebase Firestore 
 **Model**: 250MB trained model (Git LFS tracked)  
 **Deployment**: Docker + Docker Compose
 
@@ -152,13 +152,11 @@ npm run dev
 - Multi-stage build: `node:18-alpine` (builder) → `nginx:alpine` (runtime)
 - Builds React app with Vite, serves via Nginx
 - Proxies `/api/*` requests to backend
-- Size: ~500MB
 
 **Backend Container:**
 - Multi-stage build: `golang:1.21-alpine` (builder) → `python:3.11-slim` (runtime)
 - Compiles Go binary, installs Python ML dependencies
 - Includes 250MB DistilBERT model
-- Size: ~1.5GB
 
 ##  Usage
 
