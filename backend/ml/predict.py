@@ -82,8 +82,8 @@ def predict_fire_score(model, tokenizer, article_text):
             confidence = probs[0][pred_class].item()
             
             # Calculate FIRE score (0-100)
-            # Higher score = MORE RELIABLE (safer)
-            # Lower score = LESS RELIABLE (riskier)
+            # Higher score = MORE RELIABLE 
+            # Lower score = LESS RELIABLE 
             if pred_class == 1:  # True news
                 fire_score = int(50 + (confidence * 50))  # Range: 50-100 (safe)
             else:  # Fake news

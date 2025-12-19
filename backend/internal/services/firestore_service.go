@@ -24,7 +24,6 @@ type FirestoreService struct {
 	projectID string
 }
 
-// NewFirestoreService creates a new Firestore service
 // No credentials needed when Firestore rules allow public access
 func NewFirestoreService() (*FirestoreService, error) {
 	projectID := os.Getenv("FIREBASE_PROJECT_ID")
@@ -322,7 +321,6 @@ func (s *FirestoreService) ApplyModeratorOverride(articleID string, newFIREScore
 
 // GetModeratorQueue retrieves articles that need moderation, sorted by fire_score ascending (lowest/worst first)
 func (s *FirestoreService) GetModeratorQueue(limit int) ([]*models.Article, error) {
-	// Fetch a reasonable number of articles (e.g., 100)
 	url := fmt.Sprintf("https://firestore.googleapis.com/v1/projects/%s/databases/(default)/documents/articles?pageSize=100", s.projectID)
 
 	resp, err := http.Get(url)

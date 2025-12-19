@@ -29,7 +29,7 @@ func main() {
 	// Initialize Firestore service (no credentials needed with public rules)
 	firestoreService, err := services.NewFirestoreService()
 	if err != nil {
-		log.Fatalf("❌ Failed to initialize Firestore: %v", err)
+		log.Fatalf("Failed to initialize Firestore: %v", err)
 	}
 
 	// Initialize handlers
@@ -107,7 +107,7 @@ func getPythonPath() string {
 		}
 	}
 
-	// Fallback to python3 (will fail gracefully if not found)
+	// Default to python3 if none found
 	return "python3"
 }
 
